@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import collegesData from '@/data/colleges.json';
+import { NextResponse } from 'next/server';
+import colleges from '@/data/colleges.json';
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   
   const search = searchParams.get('search')?.toLowerCase() || '';
@@ -10,44 +10,41 @@ export async function GET(request: NextRequest) {
   const district = searchParams.get('district') || 'All';
   const branch = searchParams.get('branch') || 'All';
 
-  let filteredColleges = [...collegesData];
+  let filteredColleges = colleges;
 
-  // Search filter
   if (search) {
     filteredColleges = filteredColleges.filter(
-      (c) => 
-        c.name.toLowerCase().includes(search) || 
+      (c) =>
+        c.name.toLowerCase().includes(search) ||
         c.district.toLowerCase().includes(search) ||
         c.branch.toLowerCase().includes(search)
     );
   }
 
-  // Category filter
-  if (category !== 'All') {
-    filteredColleges = filteredColleges.filter((c) => c.category === category);
-  }
-
-  // District filter
   if (district !== 'All') {
     filteredColleges = filteredColleges.filter((c) => c.district === district);
   }
 
-  // Branch filter
   if (branch !== 'All') {
     filteredColleges = filteredColleges.filter((c) => c.branch === branch);
   }
 
-  // Filter based on cutoff: the college cutoff should be less than or equal to the student's cutoff
-  // FIX: Added the ?? 0 safety check to line 37
+  if (category !== 'All') {
+    filteredColleges = filteredColleges.filter((c) => c.category === category);
+  }
+
   filteredColleges = filteredColleges.filter((c) => (c.cutoff ?? 0) <= cutoff);
 
-  // Sort by highest cutoff match, then by NIRF ranking
   filteredColleges.sort((a, b) => {
-    if (b.cutoff !== a.cutoff) {
-      return (b.cutoff ?? 0) - (a.cutoff ?? 0);
-    }
+    const diffA = cutoff - (a.cutoff ?? 0);
+    const diffB = cutoff - (b.cutoff ?? 0);
+    if (diffA !== diffB) return diffA - diffB;
     return (a.nirf_ranking ?? 999) - (b.nirf_ranking ?? 999);
   });
 
-  return NextResponse.json(filteredColleges.slice(0, 50));
+  return NextResponse.json(filteredColleges, {
+    headers: {
+      'Cache-Control': 's-maxage=3600, stale-while-revalidate=86400',
+    },
+  });
 }
