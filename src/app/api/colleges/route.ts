@@ -34,7 +34,8 @@ export async function GET(request: Request) {
   }
 
   // Filter based on cutoff: the college cutoff should be less than or equal to the student's cutoff
-  filteredColleges = filteredColleges.filter((c) => c.cutoff <= cutoff);
+  filteredColleges = filteredColleges.filter((c) => (c.cutoff ?? 0) <= cutoff);
+
 
   // Sort by highest cutoff match, then by NIRF ranking
   filteredColleges.sort((a, b) => {
