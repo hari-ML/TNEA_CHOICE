@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import colleges from '@/data/colleges.json';
+import { NextRequest, NextResponse } from 'next/server';
+import collegesData from '@/data/colleges.json';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   
   const search = searchParams.get('search')?.toLowerCase() || '';
@@ -10,51 +10,44 @@ export async function GET(request: Request) {
   const district = searchParams.get('district') || 'All';
   const branch = searchParams.get('branch') || 'All';
 
-  let filteredColleges = colleges;
+  let filteredColleges = [...collegesData];
 
+  // Search filter
   if (search) {
     filteredColleges = filteredColleges.filter(
-      (c) =>
-        c.name.toLowerCase().includes(search) ||
+      (c) => 
+        c.name.toLowerCase().includes(search) || 
         c.district.toLowerCase().includes(search) ||
         c.branch.toLowerCase().includes(search)
     );
   }
 
-  if (district !== 'All') {
-    filteredColleges = filteredColleges.filter((c) => c.district === district);
-  }
-
-  if (branch !== 'All') {
-    filteredColleges = filteredColleges.filter((c) => c.branch === branch);
-  }
-
+  // Category filter
   if (category !== 'All') {
     filteredColleges = filteredColleges.filter((c) => c.category === category);
   }
 
-  // Filter based on cutoff: the college cutoff should be less than or equal to the student's cutoff
-  filteredColleges = filteredColleges.filter((c) => (c.cutoff ?? 0) <= cutoff);
+  // District filter
+  if (district !== 'All') {
+    filteredColleges = filteredColleges.filter((c) => c.district === district);
+  }
 
+  // Branch filter
+  if (branch !== 'All') {
+    filteredColleges = filteredColleges.filter((c) => c.branch === branch);
+  }
+
+  // Filter based on cutoff: the college cutoff should be less than or equal to the student's cutoff
+  // FIX: Added the ?? 0 safety check to line 37
+  filteredColleges = filteredColleges.filter((c) => (c.cutoff ?? 0) <= cutoff);
 
   // Sort by highest cutoff match, then by NIRF ranking
   filteredColleges.sort((a, b) => {
-    // Difference between student cutoff and college cutoff (smaller is better match)
-    const diffA = cutoff - a.cutoff;
-    const diffB = cutoff - b.cutoff;
-
-    if (diffA !== diffB) {
-      return diffA - diffB;
+    if (b.cutoff !== a.cutoff) {
+      return (b.cutoff ?? 0) - (a.cutoff ?? 0);
     }
-
-    // Secondary sort by NIRF ranking (lower is better)
-    return a.nirf_ranking - b.nirf_ranking;
+    return (a.nirf_ranking ?? 999) - (b.nirf_ranking ?? 999);
   });
 
-  return NextResponse.json(filteredColleges, {
-    headers: {
-      // 1 hour cache max-age, stale-while-revalidate for fast responses
-      'Cache-Control': 's-maxage=3600, stale-while-revalidate=86400',
-    },
-  });
+  return NextResponse.json(filteredColleges.slice(0, 50));
 }
