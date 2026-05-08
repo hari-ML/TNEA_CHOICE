@@ -23,8 +23,6 @@ type College = {
 export default function Home() {
   const [colleges, setColleges] = useState<College[]>([]);
   const [loading, setLoading] = useState(true);
-  const [compareList, setCompareList] = useState<College[]>([]);
-  const [showCompare, setShowCompare] = useState(false);
 
   // Filters
   const [search, setSearch] = useState('');
@@ -71,17 +69,6 @@ export default function Home() {
     }).format(amount);
   };
 
-  const toggleCompare = (college: College) => {
-    setCompareList(prev => {
-      const exists = prev.find(c => c.id === college.id);
-      if (exists) return prev.filter(c => c.id !== college.id);
-      if (prev.length >= 2) return prev; // max 2
-      return [...prev, college];
-    });
-  };
-
-  const isSelected = (id: number) => compareList.some(c => c.id === id);
-
   const categories = ['All', 'OC', 'BC', 'BCM', 'MBC', 'SC', 'SCA', 'ST'];
   const districtsList = [
     'Ariyalur', 'Chengalpattu', 'Chennai', 'Coimbatore', 'Cuddalore', 'Dharmapuri', 'Dindigul', 'Erode',
@@ -92,13 +79,27 @@ export default function Home() {
   ];
 
   const branchesList = [
-    'Aeronautical Engineering', 'Agriculture Engineering', 'Artificial Intelligence and Data Science',
-    'Artificial Intelligence and Machine Learning', 'Automobile Engineering', 'Bio Medical Engineering',
-    'Bio Technology', 'Chemical Engineering', 'Civil Engineering', 'Computer Science and Business Systems',
-    'Computer Science and Engineering', 'Electrical and Electronics Engineering',
-    'Electronics and Communication Engineering', 'Electronics and Instrumentation Engineering',
-    'Fashion Technology', 'Food Technology', 'Information Technology', 'Mechanical Engineering',
-    'Mechatronics Engineering', 'Petrochemical Engineering', 'Textile Technology'
+    'Aeronautical Engineering',
+    'Agriculture Engineering',
+    'Artificial Intelligence and Data Science',
+    'Artificial Intelligence and Machine Learning',
+    'Automobile Engineering',
+    'Bio Medical Engineering',
+    'Bio Technology',
+    'Chemical Engineering',
+    'Civil Engineering',
+    'Computer Science and Business Systems',
+    'Computer Science and Engineering',
+    'Electrical and Electronics Engineering',
+    'Electronics and Communication Engineering',
+    'Electronics and Instrumentation Engineering',
+    'Fashion Technology',
+    'Food Technology',
+    'Information Technology',
+    'Mechanical Engineering',
+    'Mechatronics Engineering',
+    'Petrochemical Engineering',
+    'Textile Technology'
   ];
 
   return (
@@ -182,8 +183,8 @@ export default function Home() {
 
           <div className="form-group">
             <label className="form-label">Department</label>
-            <input
-              className="form-input"
+            <input 
+              className="form-input" 
               list="branch-list"
               value={branch}
               onChange={(e) => setBranch(e.target.value)}
@@ -195,6 +196,7 @@ export default function Home() {
               <option value="All">All Departments</option>
               {branchesList.map(b => <option key={b} value={b}>{b}</option>)}
             </datalist>
+          </div>
           </div>
         </div>
       </aside>
@@ -227,53 +229,8 @@ export default function Home() {
         </header>
 
         <main className="page-content">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-            <div className="results-badge" style={{ margin: 0 }}>
-              {loading ? '...' : colleges.length} results
-            </div>
-            {compareList.length > 0 && (
-              <button
-                onClick={() => setShowCompare(true)}
-                style={{
-                  background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '20px',
-                  padding: '0.4rem 1rem',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  animation: 'pulse-glow 2s infinite',
-                }}
-              >
-                ⚖️ Compare ({compareList.length}/2)
-                {compareList.length === 2 && ' — Ready!'}
-              </button>
-            )}
-            {compareList.length > 0 && (
-              <button
-                onClick={() => setCompareList([])}
-                style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  color: '#94a3b8',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '20px',
-                  padding: '0.4rem 0.8rem',
-                  fontSize: '0.8rem',
-                  cursor: 'pointer',
-                }}
-              >
-                ✕ Clear
-              </button>
-            )}
-            {compareList.length < 2 && (
-              <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                ☑ Select up to 2 colleges to compare
-              </span>
-            )}
+          <div className="results-badge">
+            {loading ? '...' : colleges.length} results
           </div>
 
           {!loading && colleges.length === 0 ? (
@@ -292,7 +249,6 @@ export default function Home() {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '40px' }}></th>
                     <th>College Details</th>
                     <th>Cutoff</th>
                     <th>NIRF Rank</th>
@@ -304,81 +260,61 @@ export default function Home() {
                   {loading ? (
                     Array.from({ length: 5 }).map((_, i) => (
                       <tr key={i}>
-                        <td colSpan={6} style={{ padding: '1.5rem' }}>
+                        <td colSpan={5} style={{ padding: '1.5rem' }}>
                           <div style={{ height: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', width: '100%', animation: 'pulse 1.5s infinite' }}></div>
                         </td>
                       </tr>
                     ))
                   ) : (
-                    colleges.map((college) => {
-                      const selected = isSelected(college.id);
-                      const disabled = !selected && compareList.length >= 2;
-                      return (
-                        <tr key={college.id} style={{ background: selected ? 'rgba(99,102,241,0.08)' : undefined, transition: 'background 0.2s' }}>
-                          <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
-                            <input
-                              type="checkbox"
-                              checked={selected}
-                              disabled={disabled}
-                              onChange={() => toggleCompare(college)}
-                              title={disabled ? 'Max 2 colleges for comparison' : selected ? 'Remove from compare' : 'Add to compare'}
-                              style={{
-                                width: '18px',
-                                height: '18px',
-                                cursor: disabled ? 'not-allowed' : 'pointer',
-                                accentColor: '#6366f1',
-                                opacity: disabled ? 0.3 : 1,
-                              }}
-                            />
-                          </td>
-                          <td>
-                            <div style={{ fontWeight: 600, fontSize: '1rem', color: selected ? '#a5b4fc' : 'var(--foreground)', marginBottom: '0.25rem' }}>{college.name}</div>
-                            <div style={{ fontSize: '0.875rem', color: '#64748b', display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                              <span>📍 {college.district}</span>
-                              <span>•</span>
-                              <span>{college.branch}</span>
+                    colleges.map((college) => (
+                      <tr key={college.id}>
+                        <td>
+                          <div style={{ fontWeight: 600, fontSize: '1.1rem', color: 'var(--foreground)', marginBottom: '0.25rem' }}>{college.name}</div>
+                          <div style={{ fontSize: '0.875rem', color: '#64748b', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <span>📍 {college.district}</span>
+                            <span>•</span>
+                            <span>{college.branch}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                            <div style={{ fontWeight: 600, color: 'var(--primary)', fontSize: '1.1rem' }}>{college.cutoff}</div>
+                            <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{college.category}</div>
+                            <div>
+                              {college.cutoff_change > 0 ? (
+                                <span className="badge badge-danger">↑ {college.cutoff_change}</span>
+                              ) : college.cutoff_change < 0 ? (
+                                <span className="badge badge-success">↓ {Math.abs(college.cutoff_change)}</span>
+                              ) : (
+                                <span className="badge" style={{ background: 'rgba(255,255,255,0.05)' }}>No Change</span>
+                              )}
                             </div>
-                          </td>
-                          <td>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                              <div style={{ fontWeight: 600, color: 'var(--primary)', fontSize: '1.1rem' }}>{college.cutoff}</div>
-                              <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{college.category}</div>
-                              <div>
-                                {college.cutoff_change > 0 ? (
-                                  <span className="badge badge-danger">↑ {college.cutoff_change}</span>
-                                ) : college.cutoff_change < 0 ? (
-                                  <span className="badge badge-success">↓ {Math.abs(college.cutoff_change)}</span>
-                                ) : (
-                                  <span className="badge" style={{ background: 'rgba(255,255,255,0.05)' }}>No Change</span>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                          <td>
-                            <div style={{ fontWeight: 700, fontSize: '1.2rem', color: 'var(--foreground)' }}>
-                              #{college.nirf_ranking}
-                            </div>
-                          </td>
-                          <td>
-                            <div style={{ fontSize: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                              <div><span style={{ color: '#64748b' }}>Avg:</span> {formatCurrency(college.placements.average)}</div>
-                              <div><span style={{ color: '#64748b' }}>Med:</span> {formatCurrency(college.placements.median)}</div>
-                              <div style={{ fontWeight: 600, color: 'var(--success)' }}><span style={{ color: '#64748b', fontWeight: 400 }}>High:</span> {formatCurrency(college.placements.highest)}</div>
-                            </div>
-                          </td>
-                          <td>
-                            <a href={college.website} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.75rem' }}>
-                              Visit
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginLeft: '0.25rem' }}>
-                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                                <polyline points="15 3 21 3 21 9"></polyline>
-                                <line x1="10" y1="14" x2="21" y2="3"></line>
-                              </svg>
-                            </a>
-                          </td>
-                        </tr>
-                      );
-                    })
+                          </div>
+                        </td>
+                        <td>
+                          <div style={{ fontWeight: 700, fontSize: '1.2rem', color: 'var(--foreground)' }}>
+                            #{college.nirf_ranking}
+                          </div>
+                        </td>
+                        <td>
+                          <div style={{ fontSize: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                            <div><span style={{ color: '#64748b' }}>Avg:</span> {formatCurrency(college.placements.average)}</div>
+                            <div><span style={{ color: '#64748b' }}>Med:</span> {formatCurrency(college.placements.median)}</div>
+                            <div style={{ fontWeight: 600, color: 'var(--success)' }}><span style={{ color: '#64748b', fontWeight: 400 }}>High:</span> {formatCurrency(college.placements.highest)}</div>
+                          </div>
+                        </td>
+                        <td>
+                          <a href={college.website} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.75rem' }}>
+                            Visit Website
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginLeft: '0.25rem' }}>
+                              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                              <polyline points="15 3 21 3 21 9"></polyline>
+                              <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                          </a>
+                        </td>
+                      </tr>
+                    ))
                   )}
                 </tbody>
               </table>
@@ -387,80 +323,10 @@ export default function Home() {
         </main>
       </div>
 
-      {/* Compare Modal */}
-      {showCompare && compareList.length === 2 && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 1000,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem',
-          backdropFilter: 'blur(4px)',
-        }}
-          onClick={() => setShowCompare(false)}
-        >
-          <div style={{
-            background: '#0f172a', border: '1px solid rgba(99,102,241,0.3)', borderRadius: '16px',
-            padding: '2rem', maxWidth: '860px', width: '100%', maxHeight: '90vh', overflowY: 'auto',
-            boxShadow: '0 25px 60px rgba(0,0,0,0.5)',
-          }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ color: 'white', fontSize: '1.3rem', fontWeight: 700 }}>⚖️ College Comparison</h2>
-              <button onClick={() => setShowCompare(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer' }}>✕</button>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr 1fr', gap: '1px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden' }}>
-              {/* Header */}
-              <div style={{ background: '#1e293b', padding: '1rem', fontWeight: 600, color: '#64748b' }}></div>
-              {compareList.map((c, i) => (
-                <div key={i} style={{ background: '#1e293b', padding: '1rem', borderLeft: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div style={{ fontWeight: 700, color: '#a5b4fc', fontSize: '0.95rem', marginBottom: '0.25rem' }}>{c.name}</div>
-                  <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{c.branch}</div>
-                </div>
-              ))}
-
-              {/* Rows */}
-              {[
-                { label: '📍 District', fn: (c: College) => c.district },
-                { label: '🎯 Cutoff', fn: (c: College) => <strong style={{ color: '#6366f1' }}>{c.cutoff}</strong> },
-                { label: '📈 Trend', fn: (c: College) => c.cutoff_change > 0 ? <span style={{ color: '#f87171' }}>↑ +{c.cutoff_change}</span> : c.cutoff_change < 0 ? <span style={{ color: '#4ade80' }}>↓ {c.cutoff_change}</span> : <span style={{ color: '#94a3b8' }}>No Change</span> },
-                { label: '🏆 NIRF Rank', fn: (c: College) => <strong>#{c.nirf_ranking}</strong> },
-                { label: '💰 Avg Package', fn: (c: College) => formatCurrency(c.placements.average) },
-                { label: '💰 Median Pkg', fn: (c: College) => formatCurrency(c.placements.median) },
-                { label: '🚀 Highest Pkg', fn: (c: College) => <strong style={{ color: '#4ade80' }}>{formatCurrency(c.placements.highest)}</strong> },
-                { label: '🏷️ Category', fn: (c: College) => c.category },
-              ].map((row, ri) => (
-                <>
-                  <div key={`lbl-${ri}`} style={{ background: ri % 2 === 0 ? '#0f172a' : '#111827', padding: '0.85rem 1rem', color: '#94a3b8', fontSize: '0.85rem', fontWeight: 600 }}>{row.label}</div>
-                  {compareList.map((c, ci) => (
-                    <div key={`val-${ri}-${ci}`} style={{ background: ri % 2 === 0 ? '#0f172a' : '#111827', padding: '0.85rem 1rem', color: 'white', fontSize: '0.9rem', borderLeft: '1px solid rgba(255,255,255,0.05)' }}>
-                      {row.fn(c) as React.ReactNode}
-                    </div>
-                  ))}
-                </>
-              ))}
-            </div>
-
-            {/* Visit buttons */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1.5rem' }}>
-              {compareList.map((c, i) => (
-                <a key={i} href={c.website} target="_blank" rel="noopener noreferrer"
-                  style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', textDecoration: 'none', padding: '0.75rem', borderRadius: '10px', textAlign: 'center', fontWeight: 600, fontSize: '0.9rem' }}>
-                  Visit {c.name.split(' ').slice(0, 3).join(' ')}... →
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
       <style jsx global>{`
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: .5; }
-        }
-        @keyframes pulse-glow {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.4); }
-          50% { box-shadow: 0 0 0 8px rgba(99,102,241,0); }
         }
       `}</style>
     </div>
